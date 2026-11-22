@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Simulador educativo de diagnóstico de hardware de la E.E.T.P. N° 468. Actividad áulica del espacio curricular Hardware IV (6.º año): códigos POST, mediciones eléctricas, integridad de datos y pruebas de estrés.">
+<meta name="author" content="Prof. Diego Rodríguez - E.E.T.P. N° 468">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#121212">
+<title>Simulador de Diagnóstico de Hardware | E.E.T.P. N° 468</title>
+<style>
+    :root {
+        --bg: #121212;
+        --surface: #1e1e1e;
+        --surface-light: #2c2c2c;
+        --primary: #007bff;
+        --primary-dark: #0056b3;
+        --success: #28a745;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --text: #e0e0e0;
+        --text-muted: #a0a0a0;
+        --border: #333;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        line-height: 1.55;
+        padding: 14px;
+        padding-bottom: 104px; /* espacio para el pie fijo */
+        min-height: 100vh;
+    }
+
+    h1, h2, h3 { color: #ffffff; margin-bottom: 10px; }
+
+    h2 {
+        font-size: 1.15rem;
+        color: var(--primary);
+        border-left: 4px solid var(--primary);
+        padding-left: 10px;
+        margin-top: 18px;
+    }
+
+    h3 { font-size: 1rem; color: #cfd8e3; }
+
+    /* ---------- ENCABEZADO INSTITUCIONAL ---------- */
+    .institucional {
+        background: linear-gradient(180deg, #17273a, #161b22);
+        border: 1px solid var(--border);
+        border-left: 5px solid var(--primary);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 18px;
+    }
+    .institucional .escuela {
+        font-size: 0.75rem;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: #7fb6ff;
+        font-weight: 700;
+    }
+    .institucional h1 {
+        font-size: 1.22rem;
+        margin: 6px 0 6px;
+        color: #fff;
+        border: none;
+        padding: 0;
+        text-align: left;
+        line-height: 1.3;
+    }
+    .institucional .materia {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+    }
+    .institucional .proposito {
+        font-size: 0.82rem;
+        color: #b9c4d0;
+        margin-top: 10px;
+        border-top: 1px dashed #2f4a68;
+        padding-top: 9px;
+    }
+
+    /* ---------- TARJETAS ---------- */
+    .card {
+        background-color: var(--surface);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border);
+        display: none;
+    }
+
+    .card.active {
+        display: block;
+        animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---------- FORMULARIOS ---------- */
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.88rem;
+        color: var(--text-muted);
+    }
+
+    input[type="text"], textarea, select {
+        width: 100%;
+        min-height: 48px;
+        padding: 12px;
+        background-color: var(--surface-light);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 16px; /* evita el zoom automático en iOS */
+        font-family: inherit;
+    }
+
+    textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
+
+    input:focus, textarea:focus, select:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 1px;
+        border-color: var(--primary);
+    }
+
+    /* ---------- BOTONES ---------- */
+    button {
+        width: 100%;
+        min-height: 48px;
+        padding: 13px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.2s, opacity 0.2s, transform 0.1s;
+        margin-top: 10px;
+        color: #fff;
+        background-color: var(--primary);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        text-align: center;
+    }
+
+    button:active { transform: scale(0.985); }
+
+    button:disabled {
+        background-color: #444;
+        color: #8b8b8b;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-tool {
+        background-color: var(--surface-light);
+        border: 1px solid var(--border);
+        color: var(--text);
+    }
+
+    .btn-danger  { background-color: var(--danger); }
+    .btn-success { background-color: var(--success); }
+    .btn-neutral { background-color: var(--primary-dark); }
+
+    .btn-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    /* ---------- PANTALLAS DE INSTRUMENTO ---------- */
+    .display-screen {
+        background-color: #000;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 14px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 1.02rem;
+        text-align: center;
+        margin: 10px 0 0;
+        min-height: 62px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--success);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        word-break: break-word;
+    }
+
+    .display-error   { color: var(--danger);  border-color: var(--danger); }
+    .display-warning { color: var(--warning); border-color: var(--warning); }
+
+    /* ---------- CONTADORES Y AVISOS ---------- */
+    .word-counter {
+        font-size: 0.82rem;
+        margin-top: 6px;
+        text-align: right;
+        color: var(--text-muted);
+    }
+
+    .word-counter.error { color: var(--danger); font-weight: 700; }
+
+    .alert {
+        background-color: rgba(220, 53, 69, 0.1);
+        border: 1px solid var(--danger);
+        color: #ff8c95;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        margin-top: 10px;
+        display: none;
+    }
+
+    .alert.show { display: block; }
+
+    .status-msg {
+        font-size: 0.85rem;
+        text-align: center;
+        color: var(--success);
+        min-height: 20px;
+        margin-top: 10px;
+    }
+
+    /* ---------- VISTA PREVIA DEL INFORME (hoja blanca) ---------- */
+    .report {
+        background: #ffffff;
+        color: #1a1a1a;
+        padding: 18px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        line-height: 1.55;
+    }
+    .report .rep-h1 {
+        font-size: 1.05rem;
+        color: #0b3d6b;
+        text-align: center;
+        border-bottom: 2px solid #0b3d6b;
+        padding-bottom: 8px;
+        margin: 0 0 8px;
+        text-transform: uppercase;
+        line-height: 1.3;
+    }
+    .report .rep-sub {
+        text-align: center;
+        font-size: 0.78rem;
+        color: #4a5a6a;
+        margin-bottom: 14px;
+    }
+    .report .rep-meta {
+        font-size: 0.85rem;
+        border: 1px solid #d5dbe1;
+        background: #f6f8fa;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 14px;
+    }
+    .report h3 {
+        color: #0b3d6b;
+        font-size: 0.95rem;
+        margin: 16px 0 6px;
+        border-bottom: 1px solid #c9d3dd;
+        padding-bottom: 4px;
+    }
+    .report h4 {
+        color: #24455f;
+        font-size: 0.86rem;
+        margin: 12px 0 4px;
+        page-break-after: avoid;
+    }
+    .report p { text-align: justify; margin-bottom: 8px; }
+    .report ul { margin: 0 0 8px 20px; }
+    .report li { margin-bottom: 4px; }
+    .report strong { color: #0b3d6b; }
+
+    /* ---------- PIE FIJO ---------- */
+    .site-footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+        background: #0b0b0b;
+        border-top: 1px solid var(--border);
+        padding: 8px 12px;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        font-size: 0.72rem;
+        line-height: 1.35;
+        color: #9aa4ae;
+        text-align: center;
+    }
+    .site-footer a {
+        color: #7fb6ff;
+        text-decoration: underline;
+        display: inline-block;
+        padding: 4px 2px;
+        min-height: 24px;
+    }
+
+    /* ---------- IMPRESIÓN / GUARDAR COMO PDF ---------- */
+    @page { margin: 14mm 12mm; }
+
+    @media print {
+        body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        header,
+        footer,
+        .no-print,
+        .card:not(#final-panel) {
+            display: none !important;
+        }
+        #final-panel {
+            display: block !important;
+            background: #ffffff !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .report {
+            background: #ffffff !important;
+            color: #000000 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: 11pt;
+        }
+        .report .rep-h1 { color: #000 !important; border-color: #000 !important; }
+        .report h3 { color: #000 !important; border-color: #999 !important; page-break-after: avoid; }
+        .report h4 { color: #000 !important; }
+        .report .rep-meta { background: #ffffff !important; border: 1px solid #999 !important; }
+        .report strong { color: #000 !important; }
+        .report p, .report li { orphans: 3; widows: 3; }
+    }
+
+    @media (min-width: 560px) {
+        .btn-row { grid-template-columns: 1fr 1fr; }
+        .btn-row .full { grid-column: 1 / -1; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ================= ENCABEZADO INSTITUCIONAL ================= -->
+<header class="institucional">
+    <p class="escuela">E.E.T.P. N° 468</p>
+    <h1>Simulador de Diagnóstico de Hardware</h1>
+    <p class="materia">Espacio Curricular: Hardware IV — 6.º Año</p>
+    <p class="proposito">
+        <strong>Propósito pedagógico:</strong> esta es una actividad áulica de simulación.
+        Permite practicar un protocolo ordenado de diagnóstico de fallas en una PC de escritorio
+        (códigos POST, mediciones eléctricas, integridad de datos y pruebas de estrés) sin ningún
+        riesgo para el equipamiento real. No se solicita ningún tipo de dato personal sensible ni
+        credencial: solo el nombre y apellido del alumno/a para identificar el informe de la actividad.
+    </p>
+</header>
+
+<main>
+
+    <!-- ================= DATOS DEL ALUMNO ================= -->
+    <div class="card active" id="student-card">
+        <h2>Datos del Alumno/a</h2>
+        <p style="font-size:0.86rem;color:var(--text-muted);margin-bottom:14px;">
+            Estos datos se usan únicamente para encabezar el informe de la actividad.
+            No se envían a ningún servidor: todo el simulador funciona dentro de tu navegador.
+        </p>
+
+        <div class="form-group">
+            <label for="alumno-nombre-actividad">Nombre del alumno/a</label>
+            <input type="text"
+                   id="alumno-nombre-actividad"
+                   name="alumno_nombre_actividad_hardware_iv"
+                   autocomplete="off"
+                   autocapitalize="words"
+                   autocorrect="off"
+                   spellcheck="false"
+                   maxlength="40"
+                   placeholder="Ej. Juan">
+        </div>
+
+        <div class="form-group">
+            <label for="alumno-apellido-actividad">Apellido del alumno/a</label>
+            <input type="text"
+                   id="alumno-apellido-actividad"
+                   name="alumno_apellido_actividad_hardware_iv"
+                   autocomplete="off"
+                   autocapitalize="words"
+                   autocorrect="off"
+                   spellcheck="false"
+                   maxlength="40"
+                   placeholder="Ej. Pérez">
+        </div>
+
+        <div class="alert" id="student-alert">Completá tu nombre y apellido para comenzar la actividad.</div>
+
+        <button type="button" onclick="startSimulation()">Comenzar diagnóstico</button>
+    </div>
+
+    <!-- ================= FASE 1 ================= -->
+    <div class="card" id="phase1">
+        <h2>Fase 1: Inspección visual y códigos POST</h2>
+        <p><strong>Escenario:</strong> PC de escritorio que no enciende. Los ventiladores giran 1 segundo y se detienen. No hay video.</p>
+
+        <div style="margin-top:15px;">
+            <button type="button" class="btn-tool" onclick="usePostCard()">🔌 Insertar tarjeta POST USB</button>
+            <div class="display-screen" id="post-display" role="status" aria-live="polite">Esperando acción...</div>
+        </div>
+
+        <div class="form-group" style="margin-top:16px;">
+            <label for="text1">Justificación técnica (Fase 1)</label>
+            <textarea id="text1" placeholder="Escribe tu análisis técnico aquí..." oninput="validateText('text1', 1)"></textarea>
+            <div class="word-counter" id="count1">Palabras: 0 (mínimo 20)</div>
+            <div class="alert" id="alert1">Tu justificación técnica debe tener al menos 20 palabras.</div>
+        </div>
+
+        <button type="button" id="btn-next1" onclick="nextPhase(2)" disabled>Fase 2: Mediciones físicas ➡️</button>
+    </div>
+
+    <!-- ================= FASE 2 ================= -->
+    <div class="card" id="phase2">
+        <h2>Fase 2: Mediciones físicas y eléctricas</h2>
+
+        <div style="margin-bottom:16px;">
+            <h3>Multímetro (fuente ATX)</h3>
+            <button type="button" class="btn-tool" onclick="measureDMM()">⚡ Puentear PS_ON# y medir voltajes</button>
+            <div class="display-screen" id="dmm-display" role="status" aria-live="polite">Esperando medición...</div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <h3>Osciloscopio (rizado)</h3>
+            <button type="button" class="btn-tool" onclick="measureOscilloscope()">📈 Medir ripple en línea de 12 V</button>
+            <div class="display-screen" id="osc-display" role="status" aria-live="polite">Esperando medición...</div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <h3>Termografía infrarroja</h3>
+            <button type="button" class="btn-tool" onclick="measureThermal()">📷 Escanear placa madre (VRM)</button>
+            <div class="display-screen" id="thermal-display" role="status" aria-live="polite">Esperando escaneo...</div>
+        </div>
+
+        <div class="form-group">
+            <label for="text2">Justificación técnica (Fase 2)</label>
+            <textarea id="text2" placeholder="Interpreta los valores obtenidos..." oninput="validateText('text2', 2)"></textarea>
+            <div class="word-counter" id="count2">Palabras: 0 (mínimo 20)</div>
+            <div class="alert" id="alert2">Tu justificación técnica debe tener al menos 20 palabras.</div>
+        </div>
+
+        <button type="button" id="btn-next2" onclick="nextPhase(3)" disabled>Fase 3: Integridad de datos ➡️</button>
+    </div>
+
+    <!-- ================= FASE 3 ================= -->
+    <div class="card" id="phase3">
+        <h2>Fase 3: Integridad de datos y memoria</h2>
+
+        <div style="margin-bottom:16px;">
+            <h3>MemTest86 (RAM)</h3>
+            <button type="button" class="btn-tool" onclick="runMemTest()">💾 Ejecutar prueba de estrés RAM</button>
+            <div class="display-screen" id="memtest-display" role="status" aria-live="polite">Esperando ejecución...</div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <h3>CrystalDiskInfo (S.M.A.R.T.)</h3>
+            <button type="button" class="btn-tool" onclick="runSmartTest()">💿 Leer atributos SMART</button>
+            <div class="display-screen" id="smart-display" role="status" aria-live="polite">Esperando lectura...</div>
+        </div>
+
+        <div class="form-group">
+            <label for="text3">Justificación técnica (Fase 3)</label>
+            <textarea id="text3" placeholder="Analiza los errores de memoria o almacenamiento..." oninput="validateText('text3', 3)"></textarea>
+            <div class="word-counter" id="count3">Palabras: 0 (mínimo 20)</div>
+            <div class="alert" id="alert3">Tu justificación técnica debe tener al menos 20 palabras.</div>
+        </div>
+
+        <button type="button" id="btn-next3" onclick="nextPhase(4)" disabled>Fase 4: Pruebas de estrés ➡️</button>
+    </div>
+
+    <!-- ================= FASE 4 ================= -->
+    <div class="card" id="phase4">
+        <h2>Fase 4: Matriz de estrés</h2>
+        <p>Selecciona la herramienta adecuada para aislar el componente defectuoso.</p>
+
+        <div class="form-group" style="margin-top:16px;">
+            <label for="stress-tool">Herramienta de estrés</label>
+            <select id="stress-tool">
+                <option value="">-- Seleccionar --</option>
+                <option value="prime95">Prime95 (Small FFTs) - CPU / VRM</option>
+                <option value="furmark">FurMark - GPU</option>
+                <option value="occt">OCCT - Fuente / PSU</option>
+            </select>
+        </div>
+
+        <button type="button" class="btn-tool" onclick="runStressTest()">▶️ Iniciar prueba de estrés</button>
+        <div class="display-screen" id="stress-display" role="status" aria-live="polite">Esperando prueba...</div>
+
+        <div class="form-group" style="margin-top:16px;">
+            <label for="text4">Justificación técnica (Fase 4)</label>
+            <textarea id="text4" placeholder="Concluye cuál es el componente que falla..." oninput="validateText('text4', 4)"></textarea>
+            <div class="word-counter" id="count4">Palabras: 0 (mínimo 20)</div>
+            <div class="alert" id="alert4">Tu justificación técnica debe tener al menos 20 palabras.</div>
+        </div>
+
+        <button type="button" id="btn-finish" onclick="prepareFinalReport()" disabled>Completar y generar informe 📄</button>
+    </div>
+
+    <!-- ================= PANEL FINAL ================= -->
+    <div class="card" id="final-panel">
+        <h2 class="no-print">Informe final de la actividad</h2>
+        <p class="no-print" style="font-size:0.88rem;color:var(--text-muted);margin-bottom:14px;">
+            Revisá el informe generado. Podés imprimirlo o guardarlo como PDF, copiarlo al portapapeles
+            para pegarlo en Google Docs o Classroom, o descargarlo como archivo de texto.
+        </p>
+
+        <div id="report-preview" class="report"></div>
+
+        <div class="btn-row no-print">
+            <button type="button" class="btn-success" onclick="printReport()">🖨️ Imprimir / Guardar como PDF</button>
+            <button type="button" class="btn-neutral" onclick="copyReport()">📋 Copiar informe</button>
+            <button type="button" class="btn-tool full" onclick="downloadTxt()">⬇️ Descargar informe (.txt)</button>
+        </div>
+        <div class="status-msg no-print" id="report-status" role="status" aria-live="polite"></div>
+    </div>
+
+</main>
+
+<!-- ================= PIE DE PÁGINA FIJO ================= -->
+<footer class="site-footer">
+    <span>Material educativo interactivo de uso áulico - E.E.T.P. N° 468 | Código fuente abierto en GitHub</span><br>
+    <!-- Reemplazar USUARIO por el usuario real de GitHub antes de publicar -->
+    <a href="https://github.com/USUARIO/simulador-diagnostico-hardware"
+       target="_blank" rel="noopener noreferrer">Ver repositorio público del proyecto</a>
+</footer>
+
+<script>
+'use strict';
+
+/* =========================================================
+   ESTADO GLOBAL DE LA ACTIVIDAD
+   ========================================================= */
+var state = {
+    studentName: '',
+    studentLastname: '',
+    p1: false,
+    p2: false,
+    p3: false,
+    p4: false,
+    postCode: '',
+    voltages: '',
+    ripple: '',
+    temp: '',
+    memTestResult: '',
+    smartResult: '',
+    stressResult: '',
+    texts: { 1: '', 2: '', 3: '', 4: '' }
+};
+
+var DICTAMEN_HTML =
+    '<p>A partir de las mediciones progresivas y del flujo de diagnóstico aplicado se concluye que el ' +
+    'equipo presenta fallas múltiples. El código POST 55, junto con los errores detectados por MemTest86, ' +
+    'indica un <strong>módulo de RAM defectuoso o incompatible</strong>.</p>' +
+    '<p>Por otra parte, el rizado elevado (150 mVpp) medido con osciloscopio, la caída de tensión en la ' +
+    'línea de +12 V y el sobrecalentamiento del VRM evidencian un <strong>deterioro en la etapa de filtrado ' +
+    'de la fuente de alimentación (condensadores envejecidos) y estrés térmico en los MOSFETs de la placa ' +
+    'madre</strong>.</p>' +
+    '<p><strong>Acción sugerida:</strong> reemplazar el módulo de memoria RAM afectado, sustituir la fuente ' +
+    'de alimentación por una certificada y verificar la integridad de los condensadores y disipadores del VRM.</p>';
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+function countWords(str) {
+    var t = String(str || '').trim();
+    if (!t) { return 0; }
+    return t.split(/\s+/).filter(function (n) { return n !== ''; }).length;
+}
+
+function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+function nl2br(str) {
+    return escapeHtml(str).replace(/\r?\n/g, '<br>');
+}
+
+function cleanName(value, maxLength) {
+    return String(value || '').replace(/\s+/g, ' ').trim().slice(0, maxLength || 40);
+}
+
+/* =========================================================
+   VALIDACIÓN DE JUSTIFICACIONES
+   ========================================================= */
+function validateText(textareaId, phaseNum) {
+    var ta = document.getElementById(textareaId);
+    var text = ta ? ta.value : '';
+    var words = countWords(text);
+    var counterEl = document.getElementById('count' + phaseNum);
+    var alertEl = document.getElementById('alert' + phaseNum);
+    var btnNext = document.getElementById('btn-next' + phaseNum) || document.getElementById('btn-finish');
+
+    state.texts[phaseNum] = text;
+
+    if (words >= 20) {
+        counterEl.textContent = 'Palabras: ' + words + ' ✔';
+        counterEl.classList.remove('error');
+        alertEl.classList.remove('show');
+        checkPhaseCompletion(phaseNum);
+    } else {
+        counterEl.textContent = 'Palabras: ' + words + ' (mínimo 20)';
+        counterEl.classList.add('error');
+        alertEl.textContent = 'Tu justificación técnica debe tener al menos 20 palabras (actuales: ' + words + ').';
+        alertEl.classList.add('show');
+        if (btnNext) { btnNext.disabled = true; }
+    }
+}
+
+/* =========================================================
+   CONTROL DE FLUJO
+   ========================================================= */
+function startSimulation() {
+    var nameEl = document.getElementById('alumno-nombre-actividad');
+    var lastEl = document.getElementById('alumno-apellido-actividad');
+    var alertEl = document.getElementById('student-alert');
+
+    var name = cleanName(nameEl.value, 40);
+    var lastname = cleanName(lastEl.value, 40);
+
+    if (name.length < 2 || lastname.length < 2) {
+        alertEl.textContent = 'Completá tu nombre y apellido (mínimo 2 letras cada uno) para comenzar la actividad.';
+        alertEl.classList.add('show');
+        return;
+    }
+
+    alertEl.classList.remove('show');
+    state.studentName = name;
+    state.studentLastname = lastname;
+
+    document.getElementById('student-card').classList.remove('active');
+    document.getElementById('phase1').classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+function nextPhase(phase) {
+    var prev = document.getElementById('phase' + (phase - 1));
+    var next = document.getElementById('phase' + phase);
+    if (prev) { prev.classList.remove('active'); }
+    if (next) { next.classList.add('active'); }
+    window.scrollTo(0, 0);
+}
+
+function checkPhaseCompletion(phaseNum) {
+    if (countWords(state.texts[phaseNum]) < 20) { return; }
+
+    var done = (phaseNum === 1) ? state.p1 :
+               (phaseNum === 2) ? state.p2 :
+               (phaseNum === 3) ? state.p3 : state.p4;
+
+    if (!done) { return; }
+
+    var btn = document.getElementById('btn-next' + phaseNum) || document.getElementById('btn-finish');
+    if (btn) { btn.disabled = false; }
+}
+
+/* =========================================================
+   FASE 1 — TARJETA POST
+   ========================================================= */
+function usePostCard() {
+    var display = document.getElementById('post-display');
+    display.textContent = 'Leyendo bus...';
+    display.className = 'display-screen';
+
+    setTimeout(function () {
+        display.textContent = 'Código POST: 55';
+        display.classList.add('display-error');
+        state.postCode = '55 (memoria no instalada o defectuosa)';
+        state.p1 = true;
+        checkPhaseCompletion(1);
+    }, 1000);
+}
+
+/* =========================================================
+   FASE 2 — MEDICIONES
+   ========================================================= */
+function measureDMM() {
+    var display = document.getElementById('dmm-display');
+    display.textContent = 'Midiendo...';
+    display.className = 'display-screen';
+
+    setTimeout(function () {
+        display.innerHTML = '+3.3 V: 3.28 V<br>+5 V: 4.95 V<br>+12 V: 11.20 V';
+        display.className = 'display-screen display-warning';
+        state.voltages = '+3.3 V: 3.28 V | +5 V: 4.95 V | +12 V: 11.20 V (por debajo de tolerancia)';
+        checkP2();
+    }, 800);
+}
+
+function measureOscilloscope() {
+    var display = document.getElementById('osc-display');
+    display.textContent = 'Capturando señal...';
+    display.className = 'display-screen';
+
+    setTimeout(function () {
+        display.textContent = 'Rizado: 150 mVpp';
+        display.className = 'display-screen display-error';
+        state.ripple = '150 mVpp (excede el límite de 120 mVpp para la línea de 12 V)';
+        checkP2();
+    }, 1000);
+}
+
+function measureThermal() {
+    var display = document.getElementById('thermal-display');
+    display.textContent = 'Escaneando...';
+    display.className = 'display-screen';
+
+    setTimeout(function () {
+        display.textContent = 'Hotspot: 85.5 °C en MOSFETs';
+        display.className = 'display-screen display-error';
+        state.temp = '85.5 °C en VRM (sobrecalentamiento)';
+        checkP2();
+    }, 1200);
+}
+
+function checkP2() {
+    if (state.voltages && state.ripple && state.temp) {
+        state.p2 = true;
+        checkPhaseCompletion(2);
+    }
+}
+
+/* =========================================================
+   FASE 3 — INTEGRIDAD DE DATOS
+   ========================================================= */
+function runMemTest() {
+    var display = document.getElementById('memtest-display');
+    display.textContent = 'Ejecutando pasadas (0/4)...';
+    display.className = 'display-screen';
+
+    setTimeout(function () {
+        display.textContent = 'FALLO: Rowhammer en 0x1A2B';
+        display.className = 'display-screen display-error';
+        state.memTestResult = 'Fallo detectado: error de decodificación / Rowhammer en módulo de RAM.';
+        checkP3();
+    }, 1500);
+}
+
+function runSmartTest() {
+    var display = document.getElementById('smart-display');
+    display.textContent = 'Leyendo SMART...';
+    display.className = 'display-screen';
+
+    setTimeout(function () {
+        display.textContent = 'Sectores reasignados: 0124 (crítico)';
+        display.className = 'display-screen display-error';
+        state.smartResult = 'Sectores reasignados: 124 (riesgo de fallo inminente en HDD/SSD).';
+        checkP3();
+    }, 1000);
+}
+
+function checkP3() {
+    if (state.memTestResult && state.smartResult) {
+        state.p3 = true;
+        checkPhaseCompletion(3);
+    }
+}
+
+/* =========================================================
+   FASE 4 — ESTRÉS
+   ========================================================= */
+function runStressTest() {
+    var select = document.getElementById('stress-tool');
+    var tool = select.value;
+    var display = document.getElementById('stress-display');
+
+    if (!tool) {
+        display.textContent = 'Seleccioná una herramienta primero';
+        display.className = 'display-screen display-warning';
+        return;
+    }
+
+    display.textContent = 'Ejecutando estrés...';
+    display.className = 'display-screen';
+
+    setTimeout(function () {
+        if (tool === 'prime95') {
+            display.textContent = 'FALLO: error de redondeo a los 3 min';
+            display.className = 'display-screen display-error';
+            state.stressResult = 'Prime95 (Small FFTs): fallo de estabilidad (CPU / VRM comprometidos).';
+        } else if (tool === 'furmark') {
+            display.textContent = 'ESTABLE: 30 min sin errores';
+            display.className = 'display-screen';
+            state.stressResult = 'FurMark: estable (GPU descartada como causa).';
+        } else {
+            display.textContent = 'ALERTA: caída de voltaje en +12 V';
+            display.className = 'display-screen display-warning';
+            state.stressResult = 'OCCT: caída de voltaje detectada (fuente inestable).';
+        }
+        state.p4 = true;
+        checkPhaseCompletion(4);
+    }, 2000);
+}
+
+/* =========================================================
+   INFORME — DATOS, TEXTO PLANO Y HTML
+   ========================================================= */
+function getReportData() {
+    return {
+        alumno: (state.studentName + ' ' + state.studentLastname).trim(),
+        fecha: new Date().toLocaleString('es-AR'),
+        post: state.postCode || 'Sin registrar',
+        voltajes: state.voltages || 'Sin registrar',
+        rizado: state.ripple || 'Sin registrar',
+        termo: state.temp || 'Sin registrar',
+        memtest: state.memTestResult || 'Sin registrar',
+        smart: state.smartResult || 'Sin registrar',
+        stress: state.stressResult || 'Sin registrar',
+        t1: state.texts[1],
+        t2: state.texts[2],
+        t3: state.texts[3],
+        t4: state.texts[4]
+    };
+}
+
+function buildReportText(d) {
+    var sep = '============================================================';
+    var out = [];
+
+    out.push(sep);
+    out.push('INFORME TÉCNICO DE DIAGNÓSTICO Y PROTOCOLO DE FALLAS');
+    out.push('E.E.T.P. N° 468 - Espacio Curricular: Hardware IV (6.º Año)');
+    out.push('Actividad áulica - Simulador de diagnóstico de hardware');
+    out.push(sep);
+    out.push('');
+    out.push('Alumno/a: ' + d.alumno);
+    out.push('Fecha y hora: ' + d.fecha);
+    out.push('');
+    out.push('1. MEDICIONES REGISTRADAS');
+    out.push('------------------------------------------------------------');
+    out.push('- Código POST: ' + d.post);
+    out.push('- Voltajes (multímetro): ' + d.voltajes);
+    out.push('- Rizado (osciloscopio): ' + d.rizado);
+    out.push('- Termografía IR: ' + d.termo);
+    out.push('- MemTest86: ' + d.memtest);
+    out.push('- S.M.A.R.T.: ' + d.smart);
+    out.push('- Prueba de estrés: ' + d.stress);
+    out.push('');
+    out.push('2. JUSTIFICACIONES TÉCNICO-PRÁCTICAS');
+    out.push('------------------------------------------------------------');
+    out.push('Fase 1 - Inspección visual y códigos POST:');
+    out.push(d.t1);
+    out.push('');
+    out.push('Fase 2 - Mediciones físicas y eléctricas:');
+    out.push(d.t2);
+    out.push('');
+    out.push('Fase 3 - Integridad de datos y memoria:');
+    out.push(d.t3);
+    out.push('');
+    out.push('Fase 4 - Pruebas de estrés y aislamiento:');
+    out.push(d.t4);
+    out.push('');
+    out.push('3. DICTAMEN FINAL Y DIAGNÓSTICO SUGERIDO');
+    out.push('------------------------------------------------------------');
+    out.push('A partir de las mediciones progresivas y del flujo de diagnóstico aplicado se');
+    out.push('concluye que el equipo presenta fallas múltiples. El código POST 55, junto con');
+    out.push('los errores detectados por MemTest86, indica un módulo de RAM defectuoso o');
+    out.push('incompatible.');
+    out.push('');
+    out.push('Por otra parte, el rizado elevado (150 mVpp) medido con osciloscopio, la caída');
+    out.push('de tensión en la línea de +12 V y el sobrecalentamiento del VRM evidencian un');
+    out.push('deterioro en la etapa de filtrado de la fuente de alimentación (condensadores');
+    out.push('envejecidos) y estrés térmico en los MOSFETs de la placa madre.');
+    out.push('');
+    out.push('Acción sugerida: reemplazar el módulo de memoria RAM afectado, sustituir la');
+    out.push('fuente de alimentación por una certificada y verificar la integridad de los');
+    out.push('condensadores y disipadores del VRM.');
+    out.push('');
+    out.push(sep);
+    out.push('Documento generado con el Simulador de Diagnóstico de Hardware - E.E.T.P. N° 468');
+
+    return out.join('\n');
+}
+
+function buildReportHtml(d) {
+    var e = escapeHtml;
+
+    return '' +
+        '<h2 class="rep-h1">Informe técnico de diagnóstico y protocolo de fallas</h2>' +
+        '<p class="rep-sub">E.E.T.P. N° 468 · Hardware IV (6.º Año) · Actividad áulica</p>' +
+        '<div class="rep-meta">' +
+            '<strong>Alumno/a:</strong> ' + e(d.alumno) + '<br>' +
+            '<strong>Fecha y hora:</strong> ' + e(d.fecha) +
+        '</div>' +
+
+        '<h3>1. Mediciones registradas</h3>' +
+        '<ul>' +
+            '<li><strong>Código POST:</strong> ' + e(d.post) + '</li>' +
+            '<li><strong>Voltajes (multímetro):</strong> ' + e(d.voltajes) + '</li>' +
+            '<li><strong>Rizado (osciloscopio):</strong> ' + e(d.rizado) + '</li>' +
+            '<li><strong>Termografía IR:</strong> ' + e(d.termo) + '</li>' +
+            '<li><strong>MemTest86:</strong> ' + e(d.memtest) + '</li>' +
+            '<li><strong>S.M.A.R.T.:</strong> ' + e(d.smart) + '</li>' +
+            '<li><strong>Prueba de estrés:</strong> ' + e(d.stress) + '</li>' +
+        '</ul>' +
+
+        '<h3>2. Justificaciones técnico-prácticas</h3>' +
+        '<h4>Fase 1 — Inspección visual y códigos POST</h4><p>' + nl2br(d.t1) + '</p>' +
+        '<h4>Fase 2 — Mediciones físicas y eléctricas</h4><p>' + nl2br(d.t2) + '</p>' +
+        '<h4>Fase 3 — Integridad de datos y memoria</h4><p>' + nl2br(d.t3) + '</p>' +
+        '<h4>Fase 4 — Pruebas de estrés y aislamiento</h4><p>' + nl2br(d.t4) + '</p>' +
+
+        '<h3>3. Dictamen final y diagnóstico sugerido</h3>' + DICTAMEN_HTML;
+}
+
+function prepareFinalReport() {
+    document.getElementById('phase4').classList.remove('active');
+    document.getElementById('final-panel').classList.add('active');
+
+    var data = getReportData();
+    document.getElementById('report-preview').innerHTML = buildReportHtml(data);
+
+    window.scrollTo(0, 0);
+}
+
+/* =========================================================
+   EXPORTACIÓN SEGURA DEL INFORME
+   ========================================================= */
+function setStatus(msg) {
+    var el = document.getElementById('report-status');
+    if (el) { el.textContent = msg; }
+}
+
+function safeFileBase() {
+    var raw = 'Informe_Diagnostico_' + state.studentLastname + '_' + state.studentName;
+    return raw
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9_\-]/g, '_')
+        .replace(/_+/g, '_')
+        .slice(0, 70);
+}
+
+function printReport() {
+    setStatus('Abriendo el diálogo de impresión...');
+    window.print();
+    setTimeout(function () { setStatus(''); }, 1500);
+}
+
+function copyReport() {
+    var text = buildReportText(getReportData());
+
+    function ok() { setStatus('Informe copiado al portapapeles ✔ Pegalo en Google Docs o Classroom.'); }
+    function fail() {
+        setStatus('No se pudo copiar automáticamente. Mantené presionado sobre el informe y elegí "Copiar".');
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(ok).catch(function () { fallbackCopy(text, ok, fail); });
+    } else {
+        fallbackCopy(text, ok, fail);
+    }
+}
+
+function fallbackCopy(text, onOk, onFail) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-2000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+
+    var success = false;
+    try { success = document.execCommand('copy'); } catch (err) { success = false; }
+
+    document.body.removeChild(ta);
+    if (success) { onOk(); } else { onFail(); }
+}
+
+function downloadTxt() {
+    var text = buildReportText(getReportData());
+    var blob = new Blob(['\ufeff' + text], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = safeFileBase() + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    setStatus('Archivo de texto descargado ✔');
+}
+</script>
+</body>
+</html>
